@@ -9,8 +9,8 @@ Aplicación web en **React** para administrar la plantilla de basketball de **To
 | Integrante | Responsabilidad principal |
 |---|---|
 | Geraldine Herrera Rodríguez | Configuración, encabezado y tema, búsqueda con debounce, historial e integración en `App` |
-| INTEGRANTE 2 | Tabla, filas, ordenamiento, resaltado de filas y paginación |
-| INTEGRANTE 3 | Datos, estilos globales, estadísticas, modal, favoritos y `APRENDIZAJE.md` |
+| Jerónimo Ayala | Tabla, filas, ordenamiento, resaltado de filas y paginación |
+| Brahian Salazar | Datos, estilos globales, estadísticas, modal, favoritos y `APRENDIZAJE.md` |
 
 ## 🤖 Uso de inteligencia artificial
 
