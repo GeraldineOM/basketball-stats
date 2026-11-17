@@ -130,3 +130,155 @@ El listener solo existe mientras el modal está abierto. Al cerrarse, el cleanup
 
 ---
 
+## c) ¿Qué es useMemo y cuándo usarlo?
+
+### Explicación
+
+`useMemo` **memoriza el resultado de un cálculo** y solo lo vuelve a calcular cuando cambian sus dependencias. En los demás renders devuelve el valor guardado.
+
+```jsx
+const resultado = useMemo(() => calculoCostoso(datos), [datos]);
+```
+
+Se usa cuando un cálculo recorre muchos datos y el componente se vuelve a dibujar por razones que no lo afectan.
+
+### Diferencia con useCallback
+
+| | `useMemo` | `useCallback` |
+|---|---|---|
+| Guarda | El **resultado** de una función (un valor) | La **función** misma |
+| Ejemplo | `useMemo(() => calcularStats(lista), [lista])` | `useCallback((id) => toggle(id), [])` |
+| Equivalencia | — | `useCallback(fn, deps)` = `useMemo(() => fn, deps)` |
+
+`useCallback` sirve para no crear una función nueva en cada render, útil cuando se pasa a componentes optimizados con `React.memo`. En este proyecto no hizo falta.
+
+### Ejemplo de optimización del proyecto (`App.jsx`)
+
+```jsx
+const filteredPlayers = useMemo(() => {
+  const term = debouncedSearch.toLowerCase();
+  return players
+    .filter((player) => player.name.toLowerCase().includes(term))
+    .filter((player) => !showOnlyFavorites || favorites.includes(player.id));
+}, [debouncedSearch, showOnlyFavorites, favorites]);
+
+const stats = useMemo(() => ({
+  total: filteredPlayers.length,
+  avgPoints: calculateAverage(filteredPlayers, 'points'),
+  avgRebounds: calculateAverage(filteredPlayers, 'rebounds'),
+  avgAge: calculateAverage(filteredPlayers, 'age'),
+  topScorer: findTopBy(filteredPlayers, 'points'),
+  topEfficiency: findTopBy(filteredPlayers, 'efficiency'),
+  byPosition: countByPosition(filteredPlayers)
+}), [filteredPlayers]);
+```
+
+Al cambiar de página, abrir el modal, resaltar filas o escribir sin haber terminado (antes del debounce), `App` se vuelve a dibujar, pero `filteredPlayers` no cambia. Gracias a `useMemo`, el filtro y las estadísticas **no se recalculan** en esos casos; solo cuando cambia la búsqueda, el filtro de favoritos o la lista de favoritos.
+
+---
+
+## d) ¿Cómo funciona el cleanup en useEffect?
+
+### Explicación
+
+La función que **retorna** un `useEffect` es su cleanup. React la ejecuta:
+
+1. **Antes de volver a ejecutar el efecto**, cuando cambia una dependencia.
+2. **Cuando el componente se desmonta.**
+
+Sirve para deshacer lo que hizo el efecto: cancelar timers, quitar listeners o cerrar suscripciones.
+
+### Ejemplo con el debounce del proyecto (`App.jsx`)
+
+```jsx
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setDebouncedSearch(searchTerm.trim());
+  }, 300);
+
+  return () => clearTimeout(timer); // CLEANUP
+}, [searchTerm]);
+```
+
+Paso a paso cuando el usuario escribe "jam" rápido:
+
+| Momento | `searchTerm` | Qué pasa |
+|---|---|---|
+| 0 ms | `j` | Se programa el timer 1 (vence a los 300 ms) |
+| 80 ms | `ja` | El cleanup **cancela el timer 1**; se programa el timer 2 |
+| 160 ms | `jam` | El cleanup **cancela el timer 2**; se programa el timer 3 |
+| 460 ms | `jam` | El timer 3 vence: `debouncedSearch = 'jam'` y se filtra la tabla |
+
+Sin el cleanup, los tres timers se ejecutarían y la tabla se filtraría tres veces ('j', 'ja', 'jam'). Con él, se filtra **una sola vez**, cuando el usuario deja de escribir.
+
+Por eso hay **dos estados**: `searchTerm` actualiza el input al instante y `debouncedSearch` es el que se usa para filtrar y guardar en el historial.
+
+---
+
+## e) ¿Cómo funciona localStorage con React?
+
+### Explicación
+
+`localStorage` es un almacenamiento del navegador que **persiste** aunque se cierre o recargue la página. Tiene tres reglas que condicionan cómo se usa con React:
+
+1. **Solo guarda texto.** Por eso se usa `JSON.stringify` para guardar y `JSON.parse` para leer. Sin JSON, el booleano `false` se guardaría como el texto `"false"`, que en JavaScript cuenta como verdadero.
+2. **Es un efecto secundario.** Escribir en él se hace dentro de `useEffect`, después de dibujar.
+3. **Puede fallar** (navegación privada, almacenamiento bloqueado). Por eso el proyecto lo envuelve en `try/catch`.
+
+**Funciones auxiliares (`utils/storage.js`):**
+
+```jsx
+export function readStorage(key, fallback) {
+  try {
+    const saved = localStorage.getItem(key);
+    return saved !== null ? JSON.parse(saved) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+export function writeStorage(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Si el navegador bloquea localStorage, la app sigue funcionando sin guardar.
+  }
+}
+```
+
+### Ejemplo de persistencia 1: modo oscuro con inicialización perezosa (`App.jsx`)
+
+```jsx
+const [darkMode, setDarkMode] = useState(() => readStorage('darkMode', true));
+
+useEffect(() => {
+  writeStorage('darkMode', darkMode);
+  document.body.classList.toggle('light-mode', !darkMode);
+}, [darkMode]);
+```
+
+Pasar una **función** a `useState` hace que localStorage se lea **una sola vez, antes del primer render**. Así la página aparece directamente en el tema guardado, sin un parpadeo. Si no hay nada guardado, el valor por defecto es `true`: la aplicación arranca en modo oscuro, como en el diseño de referencia. El efecto agrega o quita la clase `light-mode` del `<body>`, y esa clase cambia las variables de color de `index.css`.
+
+### Ejemplo de persistencia 2: favoritos con carga inicial `[]` (`App.jsx`)
+
+```jsx
+useEffect(() => {
+  setFavorites(readStorage('favorites', []));
+  setSearchHistory(readStorage('searchHistory', []));
+  setIsStorageLoaded(true);
+}, []);
+
+useEffect(() => {
+  if (isStorageLoaded) writeStorage('favorites', favorites);
+}, [favorites, isStorageLoaded]);
+```
+
+¿Por qué `isStorageLoaded`? Al montar se ejecutan **todos** los efectos. Sin esa bandera, el efecto de guardado escribiría el arreglo vacío inicial (`[]`) y borraría los favoritos antes de que la carga los recupere. La bandera asegura que **solo se guarde después de haber leído**.
+
+**Resultado en el navegador** (F12 › Application › Local Storage):
+
+```text
+darkMode       true
+favorites      [1,3,9]
+searchHistory  ["jeff","scott","noah","bryan","kevin"]
+```
