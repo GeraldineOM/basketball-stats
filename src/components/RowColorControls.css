@@ -1,0 +1,35 @@
+.row-colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.row-colors__button {
+  padding: 8px 16px;
+  border: 1px solid rgba(140, 136, 168, 0.45);
+  border-radius: 999px;
+  background-color: transparent;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.row-colors__button:hover {
+  border-color: var(--color-orange);
+  transform: translateY(-1px);
+}
+
+.row-colors__button--active {
+  border-color: var(--color-teal-strong);
+  background-color: var(--color-teal-strong);
+  color: #062a22;
+}
+
+@media (max-width: 600px) {
+  .row-colors__button {
+    flex: 1;
+    padding: 8px 10px;
+  }
+}
