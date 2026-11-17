@@ -1,0 +1,51 @@
+/* Bloque app: estructura general de la página */
+.app {
+  min-height: 100vh;
+  padding-bottom: 48px;
+  background:
+    radial-gradient(circle at 85% 70%, rgba(60, 207, 176, 0.08), transparent 40%),
+    var(--color-bg);
+}
+
+.app__panel {
+  position: relative;
+  max-width: 1040px;
+  margin: 26px auto 0;
+  padding: 30px 28px 28px;
+  border: 1px solid var(--color-card-border);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 60% 0%, rgba(247, 164, 64, 0.12), transparent 45%),
+    var(--color-panel);
+  box-shadow: var(--shadow);
+  transition: background-color 0.3s ease;
+}
+
+.app__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 24px 0 18px;
+}
+
+/* Tablet y celular: el panel ocupa el ancho con márgenes */
+@media (max-width: 1100px) {
+  .app__panel {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .app__panel {
+    padding: 22px 14px;
+    border-radius: 20px;
+  }
+
+  .app__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
