@@ -1,7 +1,7 @@
 import { getPageNumbers } from '../utils/players';
 import './Pagination.css';
 
-const PAGE_SIZES = [5, 10, 15, 20];
+const PAGE_SIZES = [5, 10, 15, 20, 25];
 
 // Controles de paginación: tamaño de página, resumen "Mostrando X-Y de Z" y navegación.
 function Pagination({ currentPage, totalPages, onPageChange, itemsPerPage, onItemsPerPageChange, totalItems }) {
