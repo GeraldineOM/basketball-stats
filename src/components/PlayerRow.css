@@ -1,0 +1,69 @@
+.player-row {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.player-row:hover {
+  background-color: #f1f0f7;
+}
+
+/* Modificadores de resaltado (pares / impares) */
+.player-row--even,
+.player-row--even:hover {
+  background-color: var(--color-even);
+}
+
+.player-row--odd,
+.player-row--odd:hover {
+  background-color: var(--color-odd);
+}
+
+.player-row__cell {
+  padding: 9px 12px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.player-row__cell--fav {
+  padding-left: 16px;
+}
+
+.player-row__cell--number,
+.player-row__cell--name {
+  font-weight: 700;
+}
+
+.player-row__cell--numeric {
+  text-align: center;
+}
+
+.player-row__star {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--color-yellow);
+  border-radius: 5px;
+  background-color: #ffffff;
+  color: var(--color-yellow);
+  font-size: 13px;
+  line-height: 1;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.player-row__star:hover {
+  transform: scale(1.12);
+}
+
+.player-row__star--active {
+  background-color: var(--color-yellow);
+  color: #1b1500;
+}
+
+@media (max-width: 600px) {
+  .player-row__cell {
+    padding: 8px;
+    font-size: 13px;
+  }
+}
