@@ -1,0 +1,38 @@
+.favorites-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 14px;
+  border: 1px solid rgba(140, 136, 168, 0.45);
+  border-radius: 999px;
+  font-size: 12px;
+  transition: border-color 0.2s ease;
+}
+
+.favorites-filter--active {
+  border-color: var(--color-yellow);
+}
+
+.favorites-filter__label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.favorites-filter__checkbox {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--color-yellow);
+}
+
+.favorites-filter__count {
+  font-weight: 700;
+  color: var(--color-yellow);
+}
+
+body.light-mode .favorites-filter__count {
+  color: #b07d00;
+}
